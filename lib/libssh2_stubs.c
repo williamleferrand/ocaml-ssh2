@@ -10,6 +10,34 @@
 
 #include <libssh2.h>
 
+
+/* The session data structure */
+
+
+#define Session_val(v) (*((LIBSSH2_SESSION **) Data_custom_val(v))) 
+
+void finalize (value v) {
+  /* LIBSSH2_SESSION *session = Session_val(v) ; */
+  // Insert here the cleaning code for session, cleaned while finalized (and uncomment in the context ..)
+  return ;
+}
+ 
+static struct custom_operations session_op = {
+  "libssh2.session",
+  //(void *)finalize,
+  custom_finalize_default,
+  custom_compare_default,
+  custom_hash_default,
+  custom_serialize_default,
+  custom_deserialize_default
+};
+
+value alloc_session (LIBSSH2_SESSION *session) {
+  value v = alloc_custom(&session_op, sizeof(LIBSSH2_SESSION *), 0, 1);
+  Session_val (v) = session;
+  return v;
+}
+
 /*
  * libssh2_init()
  */
@@ -41,4 +69,57 @@ value ocaml_libssh2_exit (value unit) {
   libssh2_exit () ; 
 
   CAMLreturn (Val_unit); 
+}
+
+/*
+ * libssh2_session_init ()
+ */
+
+value ocaml_libssh2_session_init (value unit) {
+  CAMLparam1 (unit) ; 
+  
+  LIBSSH2_SESSION *session = libssh2_session_init ();
+  
+  if (!session)
+    {
+      caml_failwith("libssh2_session_init returned an invalid handle") ; 
+    }
+  
+  CAMLreturn (alloc_session (session)); 
+}
+
+value ocaml_libssh2_session_free (value ocaml_session) {
+  CAMLparam1 (ocaml_session) ; 
+  LIBSSH2_SESSION *session = Session_val (ocaml_session); 
+  libssh2_session_free (session) ;
+  CAMLreturn (Val_unit) ;
+}
+
+// Ok now we deal with the business functions 
+
+value ocaml_libssh2_base64_decode (value ocaml_session, value ocaml_input) {
+  CAMLparam2 (ocaml_session, ocaml_input) ; 
+  
+  LIBSSH2_SESSION *session ; 
+  
+  const char *src; 
+  unsigned int src_len = strlen (src) ; // Does not always work, but as the ocaml_input is supposed to be base64 encoded, the assumption holds
+
+  char *data ; 
+  unsigned int datalen ; 
+  
+  int ret ; 
+
+
+  session = Session_val (ocaml_session) ;
+  src = String_val (ocaml_input) ;
+
+  ret = libssh2_base64_decode(session, &data, &datalen, src, src_len);
+
+  if (ret) 
+    {
+      caml_failwith ("libssh2_base64_decode couldn't read the input string"); 
+    }
+  
+  CAMLreturn (caml_copy_string (data)); 
 }
