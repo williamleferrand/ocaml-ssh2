@@ -1,0 +1,22 @@
+OASISFormat: 0.1
+Name: ocaml-ssh2
+Version: 0.0.1
+LicenseFile: COPYING
+License: PROP
+Authors: William Le Ferrand
+BuildTools: ocamlbuild
+Plugins: DevFiles (0.2), META (0.2)
+Synopsis: Bindings for the libssh2 library
+
+Library ssh2
+  Path: lib
+  Modules: SSH2
+  CCLib: -lssh2
+  CSources: libssh2_stubs.c
+  CCOpt: -fPIC
+
+Executable test1
+  Path:         test
+  MainIs:       test1.ml
+  Install:      false
+  BuildDepends: oUnit (>= 1.1.0), ssh2
