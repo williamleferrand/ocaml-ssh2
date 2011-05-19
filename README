@@ -1,4 +1,5 @@
-ocaml-ssh library 
+ocaml-ssh2 library 
+
+bindings for http://www.libssh2.org/
 
 19/05/2011 - william@corefarm.com
-
