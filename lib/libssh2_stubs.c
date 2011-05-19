@@ -123,3 +123,69 @@ value ocaml_libssh2_base64_decode (value ocaml_session, value ocaml_input) {
   
   CAMLreturn (caml_copy_string (data)); 
 }
+
+
+/*
+ * libssh_session_startup
+ */
+
+value ocaml_libssh2_session_startup (value ocaml_session, value ocaml_socket) {
+  CAMLparam2 (ocaml_session, ocaml_socket); 
+
+  LIBSSH2_SESSION *session ; 
+  int sock ;
+  int ret ; 
+
+  session = Session_val (ocaml_session) ; 
+  sock = Int_val (ocaml_socket) ;
+
+  ret = libssh2_session_startup(session, sock) ; 
+
+  if (ret) {
+    caml_failwith ("ocaml_libssh2_session_startup can't connect to <sock>"); 
+  }
+
+  CAMLreturn (Val_unit); 
+}
+
+
+/*
+ * libssh2_session_disconnect 
+ */
+
+value ocaml_libssh2_session_disconnect (value ocaml_session, value ocaml_description) {
+  CAMLparam2 (ocaml_session, ocaml_description); 
+  LIBSSH2_SESSION *session ; 
+  int ret ;
+
+  session = Session_val (ocaml_session) ; 
+  
+
+  ret = libssh2_session_disconnect (session, String_val (ocaml_description)); 
+  
+  if (ret) {
+    caml_failwith ("ocaml_libssh2_session_disconnect returned non zero code") ; 
+  }
+  
+  CAMLreturn (Val_unit) ;  
+}
+
+
+/*
+ * libssh2_userauth_password
+ */
+
+value ocaml_libssh2_userauth_password (value ocaml_session, value username, value password) {
+  CAMLparam3 (ocaml_session, username, password) ; 
+  LIBSSH2_SESSION *session ; 
+  int ret ; 
+  session = Session_val (ocaml_session) ; 
+
+  ret = libssh2_userauth_password (session, String_val (username), String_val (password)) ; 
+
+  if (ret) {
+    CAMLreturn (Val_bool (0)); 
+  }
+  
+  CAMLreturn (Val_bool (1)) ;
+}

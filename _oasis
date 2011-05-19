@@ -14,9 +14,10 @@ Library ssh2
   CCLib: -lssh2
   CSources: libssh2_stubs.c
   CCOpt: -fPIC
+  BuildDepends: Unix
 
-Executable test1
+Executable test2
   Path:         test
-  MainIs:       test1.ml
+  MainIs:       test2.ml
   Install:      false
-  BuildDepends: oUnit (>= 1.1.0), ssh2
+  BuildDepends: oUnit (>= 1.1.0), ssh2, Unix
