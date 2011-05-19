@@ -26,6 +26,9 @@ let _ =
           print_endline "connection success"; 
           let channel = SSH2.channel_open_session session in 
           print_endline "channel is here" ; 
+          SSH2.channel_exec channel "touch /tmp/temoin" ; 
+          print_endline "we have requested the pty, and so?"; 
+          
           SSH2.channel_free channel 
      | false -> print_endline "connection failure (bad credentials)"); 
 

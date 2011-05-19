@@ -252,3 +252,67 @@ value ocaml_libssh2_channel_free (value ocaml_channel) {
   
   CAMLreturn (Val_unit); 
 }
+
+/*
+ * libssh2_channel_setenv
+ */
+
+value ocaml_libssh2_channel_setenv (value ocaml_channel, value ocaml_varname, value ocaml_value) {
+  CAMLparam3 (ocaml_channel, ocaml_varname, ocaml_value) ; 
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ;
+ 
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_setenv (channel, String_val (ocaml_varname), String_val (ocaml_value)) ;
+
+  if (ret) {
+    caml_failwith ("libssh2_channel_setenv returned a nonzero code, the changed are probably not applied"); 
+  }
+ 
+  CAMLreturn (Val_unit);  
+}
+
+
+/*
+ * libssh2_channel_request_pty 
+ */
+
+// Ok here we hide the "vanilla" termcap, as you don't want anything else do you ? :) 
+
+value ocaml_libssh2_channel_request_pty (value ocaml_channel) {
+  CAMLparam1 (ocaml_channel); 
+
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ;
+ 
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_request_pty (channel, "vanilla"); 
+
+  if (ret) {
+    caml_failwith ("libssh2_channel_request_pty returned a nonzero code, the changed are probably not applied"); 
+  }
+  
+  CAMLreturn (Val_unit); 
+}
+
+
+/*
+ * libssh2_channel_exec 
+ */
+
+value ocaml_libssh2_channel_exec (value ocaml_channel, value ocaml_command) {
+  CAMLparam2 (ocaml_channel, ocaml_command); 
+    LIBSSH2_CHANNEL *channel ; 
+  int ret ;
+ 
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_exec (channel, String_val (ocaml_command)); 
+
+  if (ret) {
+    caml_failwith ("libssh2_channel_exec returned a nonzero code"); 
+  }
+  
+  CAMLreturn (Val_unit);
+  
+
+}

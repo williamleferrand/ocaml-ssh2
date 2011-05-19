@@ -27,3 +27,9 @@ external userauth_password : session -> string -> string -> bool = "ocaml_libssh
 
 external channel_open_session : session -> channel = "ocaml_libssh2_channel_open_session"
 external channel_free : channel -> unit = "ocaml_libssh2_channel_free"
+
+external channel_setenv : channel -> string -> string -> unit = "ocaml_libssh2_channel_setenv"
+external channel_request_pty : channel -> unit = "ocaml_libssh2_channel_request_pty"
+
+
+external channel_exec : channel -> string -> unit = "ocaml_libssh2_channel_exec"
