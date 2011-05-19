@@ -30,3 +30,15 @@ value ocaml_libssh2_init (value ocaml_flag) {
   CAMLreturn (Val_unit);
 }
 
+
+/* 
+ * libssh2_exit ()
+ */
+
+value ocaml_libssh2_exit (value unit) {
+  CAMLparam1 (unit) ;
+  
+  libssh2_exit () ; 
+
+  CAMLreturn (Val_unit); 
+}
