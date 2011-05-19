@@ -21,12 +21,17 @@ let _ =
   
     print_endline "session is up" ;
     
-    let result = SSH2.userauth_password session username password in
-    
-    Printf.printf "> result: %b\n" result ;
-    SSH2.session_disconnect session "Normal shutdown" ; 
-    SSH2.session_free session ;
-    SSH2.eXit () ;
-    print_endline "everything is ok, .. exiting" 
+   ( match SSH2.userauth_password session username password with 
+        true -> 
+          print_endline "connection success"; 
+          let channel = SSH2.channel_open_session session in 
+          print_endline "channel is here" ; 
+          SSH2.channel_free channel 
+     | false -> print_endline "connection failure (bad credentials)"); 
+
+   SSH2.session_disconnect session "Normal shutdown" ; 
+   SSH2.session_free session ;
+   SSH2.eXit () ;
+   print_endline "everything is ok, .. exiting" 
   with e -> Printf.printf "Panic: %s\n" (Printexc.to_string e)
 

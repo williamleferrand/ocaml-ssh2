@@ -16,7 +16,7 @@
 
 #define Session_val(v) (*((LIBSSH2_SESSION **) Data_custom_val(v))) 
 
-void finalize (value v) {
+void finalize_session (value v) {
   /* LIBSSH2_SESSION *session = Session_val(v) ; */
   // Insert here the cleaning code for session, cleaned while finalized (and uncomment in the context ..)
   return ;
@@ -24,7 +24,7 @@ void finalize (value v) {
  
 static struct custom_operations session_op = {
   "libssh2.session",
-  //(void *)finalize,
+  //(void *)finalize_session,
   custom_finalize_default,
   custom_compare_default,
   custom_hash_default,
@@ -35,6 +35,30 @@ static struct custom_operations session_op = {
 value alloc_session (LIBSSH2_SESSION *session) {
   value v = alloc_custom(&session_op, sizeof(LIBSSH2_SESSION *), 0, 1);
   Session_val (v) = session;
+  return v;
+}
+
+#define Channel_val(v) (*((LIBSSH2_CHANNEL **) Data_custom_val(v))) 
+
+void finalize_channel (value v) {
+  /* LIBSSH2_CHANNEL *channel = Channel_val(v) ; */
+  // Insert here the cleaning code for channel, cleaned while finalized (and uncomment in the context ..)
+  return ;
+}
+ 
+static struct custom_operations channel_op = {
+  "libssh2.channel",
+  //(void *)finalize_channel,
+  custom_finalize_default,
+  custom_compare_default,
+  custom_hash_default,
+  custom_serialize_default,
+  custom_deserialize_default
+};
+
+value alloc_channel (LIBSSH2_CHANNEL *channel) {
+  value v = alloc_custom(&channel_op, sizeof(LIBSSH2_CHANNEL *), 0, 1);
+  Channel_val (v) = channel;
   return v;
 }
 
@@ -159,7 +183,6 @@ value ocaml_libssh2_session_disconnect (value ocaml_session, value ocaml_descrip
   int ret ;
 
   session = Session_val (ocaml_session) ; 
-  
 
   ret = libssh2_session_disconnect (session, String_val (ocaml_description)); 
   
@@ -188,4 +211,44 @@ value ocaml_libssh2_userauth_password (value ocaml_session, value username, valu
   }
   
   CAMLreturn (Val_bool (1)) ;
+}
+
+/*
+ * libssh2_channel_open_session
+ */
+
+value ocaml_libssh2_channel_open_session (value ocaml_session) {
+  CAMLparam1 (ocaml_session) ;
+
+  LIBSSH2_SESSION *session; 
+  LIBSSH2_CHANNEL *channel;
+  
+  session = Session_val (ocaml_session) ; 
+  
+  if (!(channel = libssh2_channel_open_session(session))) {
+    caml_failwith ("ocaml_libssh2_channel_open_session coundn't open session"); 
+  }
+
+  CAMLreturn (alloc_channel (channel)); 
+}
+
+
+/*
+ * libssh2_channel_free
+ */ 
+
+value ocaml_libssh2_channel_free (value ocaml_channel) {
+  CAMLparam1 (ocaml_channel) ;
+
+  LIBSSH2_CHANNEL *channel; 
+  channel = Channel_val (ocaml_channel) ;
+  int ret ;
+  
+  ret = libssh2_channel_free (channel) ;
+  
+  if (ret) {
+    caml_failwith ("ocaml_libssh2_channel_free returned a non zero value"); 
+  }
+  
+  CAMLreturn (Val_unit); 
 }
