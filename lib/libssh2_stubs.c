@@ -302,7 +302,7 @@ value ocaml_libssh2_channel_request_pty (value ocaml_channel) {
 
 value ocaml_libssh2_channel_exec (value ocaml_channel, value ocaml_command) {
   CAMLparam2 (ocaml_channel, ocaml_command); 
-    LIBSSH2_CHANNEL *channel ; 
+  LIBSSH2_CHANNEL *channel ; 
   int ret ;
  
   channel = Channel_val (ocaml_channel) ;
@@ -315,4 +315,20 @@ value ocaml_libssh2_channel_exec (value ocaml_channel, value ocaml_command) {
   CAMLreturn (Val_unit);
   
 
+}
+
+/*
+ * libssh2_channel_read 
+ */ 
+
+value ocaml_libssh2_channel_read (value ocaml_channel, value ocaml_buf, value ocaml_buflen) {
+  CAMLparam3 (ocaml_channel, ocaml_buf, ocaml_buflen);
+  
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ;
+  
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_read (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ;
+  
+  CAMLreturn (Val_int (ret)) ;
 }

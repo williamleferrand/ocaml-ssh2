@@ -33,3 +33,4 @@ external channel_request_pty : channel -> unit = "ocaml_libssh2_channel_request_
 
 
 external channel_exec : channel -> string -> unit = "ocaml_libssh2_channel_exec"
+external channel_read : channel -> string -> int -> int = "ocaml_libssh2_channel_read"
