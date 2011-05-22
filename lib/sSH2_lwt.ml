@@ -95,3 +95,14 @@ let channel_read conn channel =
       | `Eagain -> print_endline "EAGAIN" ; if Buffer.length gbuf > 0 then return (Buffer.contents gbuf) else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
   
   keep_reading conn channel ()
+
+let channel_write conn channel buf = 
+  print_endline "channel_write" ; 
+ 
+  let rec keep_writing conn channel buf buflen () = 
+    match SSH2.channel_write channel buf buflen with 
+      | `Wrote 0 -> return () 
+      | `Wrote i -> keep_writing conn channel (String.sub buf i (buflen - i)) (buflen - i) ()
+      | `Eagain -> Lwt_unix.wait_write conn.fd >>= keep_writing conn channel buf buflen in 
+  
+  keep_writing conn channel buf (String.length buf) () 

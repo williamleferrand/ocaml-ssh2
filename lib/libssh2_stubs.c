@@ -438,11 +438,25 @@ value ocaml_libssh2_channel_write (value ocaml_channel, value ocaml_buf, value o
   
   LIBSSH2_CHANNEL *channel ; 
   int ret ; 
+  value result ;
 
   channel = Channel_val (ocaml_channel) ;
   ret = libssh2_channel_write (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ; 
   
-  CAMLreturn (Val_int (ret));
+  if (ret == -37) {
+    CAMLreturn (hash_variant ("Eagain")); 
+  }
+  
+  if (ret < 0) {
+    caml_failwith ("libssh2_channel_write returned a nonzero code"); 
+  }
+ 
+  result = caml_alloc (2, 0); 
+
+  Store_field (result, 0, hash_variant ("Wrote")); 
+  Store_field (result, 1, Val_int (ret)) ;
+  
+  CAMLreturn (result);
 }
 
 /*
