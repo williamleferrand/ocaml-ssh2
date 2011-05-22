@@ -12,7 +12,7 @@ let _ =
   Lwt_main.run 
     (
       Lwt.ignore_result (print_forever ()); 
-      SSH2_lwt.connect "188.165.201.126" 22 
+      SSH2_lwt.connect2 "188.165.201.126" 22 
       >>= fun conn -> 
       print_endline "connected" ;
       Lwt_unix.sleep 1.0 

@@ -57,14 +57,14 @@ CAMLprim value lwt_ssh2_session_startup_job(value ocaml_session, value ocaml_soc
   return lwt_unix_alloc_job(&(job->job));
 }
 
-CAMLprim value lwt_unix_session_startup_result(value val_job)
+CAMLprim value lwt_ssh2_session_startup_result(value val_job)
 {
   struct job_session_startup *job = Job_session_startup_val(val_job);
   if (job->error_code) unix_error(job->error_code, "session_startup", Nothing);
   return Val_unit;
 }
 
-CAMLprim value lwt_unix_session_startup_free(value val_job)
+CAMLprim value lwt_ssh2_session_startup_free(value val_job)
 {
   struct job_session_startup *job = Job_session_startup_val(val_job);
   lwt_unix_free_job(&job->job);
