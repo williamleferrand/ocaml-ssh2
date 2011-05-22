@@ -20,10 +20,11 @@ external session_free : session -> unit = "ocaml_libssh2_session_free"
 
 external base64_decode : session -> string -> string = "ocaml_libssh2_base64_decode"
 
-external session_startup : session -> Unix.file_descr -> unit = "ocaml_libssh2_session_startup"
+external session_startup : session -> Unix.file_descr -> bool = "ocaml_libssh2_session_startup"
 external session_disconnect : session -> string -> unit = "ocaml_libssh2_session_disconnect" 
 
-external userauth_password : session -> string -> string -> bool = "ocaml_libssh2_userauth_password"
+type auth_reply = Authenticated | Forbidden | EAGAIN 
+external userauth_password : session -> string -> string -> auth_reply = "ocaml_libssh2_userauth_password"
 
 external channel_open_session : session -> channel = "ocaml_libssh2_channel_open_session"
 external channel_free : channel -> unit = "ocaml_libssh2_channel_free"

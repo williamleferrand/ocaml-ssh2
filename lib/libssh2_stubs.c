@@ -165,11 +165,15 @@ value ocaml_libssh2_session_startup (value ocaml_session, value ocaml_socket) {
 
   ret = libssh2_session_startup(session, sock) ; 
 
+  if (ret == -37) {
+    CAMLreturn (Val_bool (0));
+  }
+   
   if (ret) {
     caml_failwith ("ocaml_libssh2_session_startup can't connect to <sock>"); 
   }
 
-  CAMLreturn (Val_unit); 
+  CAMLreturn (Val_bool (1)); 
 }
 
 
@@ -206,11 +210,15 @@ value ocaml_libssh2_userauth_password (value ocaml_session, value username, valu
 
   ret = libssh2_userauth_password (session, String_val (username), String_val (password)) ; 
 
+  if (ret == -37) {
+    CAMLreturn (Val_int (2)); 
+  }
+
   if (ret) {
-    CAMLreturn (Val_bool (0)); 
+    CAMLreturn (Val_int (1)); 
   }
   
-  CAMLreturn (Val_bool (1)) ;
+  CAMLreturn (Val_bool (0)) ;
 }
 
 /*
