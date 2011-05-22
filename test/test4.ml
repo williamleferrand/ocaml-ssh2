@@ -34,6 +34,15 @@ let _ =
           SSH2_lwt.channel_read conn channel  
           >>= fun s -> 
           print_endline s; 
+          SSH2_lwt.channel_write conn channel "cd /tmp\n" 
+          >>= fun _ ->
+          
+          SSH2_lwt.channel_write conn channel "ls -l\n" 
+          >>= fun _ ->
+          print_endline "ok"; 
+          SSH2_lwt.channel_read conn channel  
+          >>= fun s -> 
+          print_endline s; 
           
           return () 
                     
