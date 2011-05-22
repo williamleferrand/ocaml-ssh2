@@ -40,15 +40,6 @@ let session_startup session fd =
       | false -> Lwt_unix.wait_read fd >>= keep_reading fd in 
   Lwt_unix.wait_write fd >>= keep_reading fd
 
-let userauth_password username password conn =
-  print_endline "userauth" ;
-  let rec keep_reading conn () =
-    match SSH2.userauth_password conn.session username password with 
-      | SSH2.Authenticated -> return true 
-      | SSH2.Forbidden -> return false 
-      | SSH2.EAGAIN -> Lwt_unix.wait_read conn.fd >>= keep_reading conn in 
-  Lwt_unix.wait_write conn.fd >>= keep_reading conn  
-
 let connect_nb host port = 
   let fd = Lwt_unix.socket Lwt_unix.PF_INET Lwt_unix.SOCK_STREAM 0 in
   let sockaddr = Lwt_unix.ADDR_INET (Unix.inet_addr_of_string host, port) in 
@@ -60,3 +51,47 @@ let connect_nb host port =
   session_startup session fd
   >>= fun () -> 
   return { session ; fd }
+
+
+let userauth_password username password conn =
+  print_endline "userauth" ;
+  let rec keep_reading conn () =
+    match SSH2.userauth_password conn.session username password with 
+      | `Authenticated -> return true 
+      | `Forbidden -> return false 
+      | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn in 
+  Lwt_unix.wait_write conn.fd >>= keep_reading conn  
+
+
+let channel_open_session conn = 
+  print_endline "open_session" ; 
+  let rec keep_reading conn () = 
+      print_endline "keep reading" ; 
+    match SSH2.channel_open_session conn.session with
+      | `Channel channel -> return channel 
+      | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn in
+  Lwt_unix.wait_write conn.fd >>= keep_reading conn
+
+let channel_shell conn channel = 
+  print_endline "channel_shell" ; 
+  let rec keep_reading conn channel () = 
+    match SSH2.channel_shell channel with 
+        `Ready -> return () 
+      | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn channel in
+  Lwt_unix.wait_write conn.fd >>= keep_reading conn channel
+
+
+let channel_read conn channel = 
+  print_endline "channel_read" ; 
+  let gbuf = Buffer.create 100 in 
+  
+  let rec keep_reading conn channel () = 
+    let sbuflen = 8192 in 
+    let sbuf = String.create sbuflen in 
+    print_endline "keep_reading" ;
+    match SSH2.channel_read channel sbuf sbuflen with 
+      | `Read 0 -> print_endline "OUT" ; return (Buffer.contents gbuf)
+      | `Read i -> print_endline "READ" ; Buffer.add_substring gbuf sbuf 0 sbuflen ; keep_reading conn channel ()
+      | `Eagain -> print_endline "EAGAIN" ; if Buffer.length gbuf > 0 then return (Buffer.contents gbuf) else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
+  
+  keep_reading conn channel ()

@@ -211,14 +211,13 @@ value ocaml_libssh2_userauth_password (value ocaml_session, value username, valu
   ret = libssh2_userauth_password (session, String_val (username), String_val (password)) ; 
 
   if (ret == -37) {
-    CAMLreturn (Val_int (2)); 
+    CAMLreturn (hash_variant ("Eagain")); 
   }
 
   if (ret) {
-    CAMLreturn (Val_int (1)); 
+    CAMLreturn (hash_variant ("Forbidden"));
   }
-  
-  CAMLreturn (Val_bool (0)) ;
+    CAMLreturn (hash_variant ("Authenticated"));
 }
 
 /*
@@ -231,13 +230,24 @@ value ocaml_libssh2_channel_open_session (value ocaml_session) {
   LIBSSH2_SESSION *session; 
   LIBSSH2_CHANNEL *channel;
   
+  value result ; 
   session = Session_val (ocaml_session) ; 
   
-  if (!(channel = libssh2_channel_open_session(session))) {
-    caml_failwith ("ocaml_libssh2_channel_open_session coundn't open session"); 
-  }
+  channel = libssh2_channel_open_session(session) ;
 
-  CAMLreturn (alloc_channel (channel)); 
+  // printf ("Channel : %d\n", channel); fflush (stdout) ; 
+
+
+  //  if (!channel) caml_failwith ("ocaml_libssh2_channel_open_session coundn't open session"); 
+  
+  if (channel == LIBSSH2CHANNEL_EAGAIN || !channel) CAMLreturn (hash_variant ("Eagain")) ;
+  
+  result = caml_alloc (2, 0) ;
+
+  Store_field (result, 0, hash_variant ("Channel")); 
+  Store_field (result, 1, alloc_channel (channel)); 
+  
+  CAMLreturn (result); 
 }
 
 
@@ -371,11 +381,26 @@ value ocaml_libssh2_channel_read (value ocaml_channel, value ocaml_buf, value oc
   
   LIBSSH2_CHANNEL *channel ; 
   int ret ;
+  value result ;
   
   channel = Channel_val (ocaml_channel) ;
   ret = libssh2_channel_read (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ;
   
-  CAMLreturn (Val_int (ret)) ;
+  
+  if (ret == -37) {
+    CAMLreturn (hash_variant ("Eagain")); 
+  }
+  
+  if (ret < 0) {
+    caml_failwith ("libssh2_channel_read returned a nonzero code"); 
+  }
+ 
+  result = caml_alloc (2, 0); 
+  Store_field (result, 0, hash_variant ("Read")); 
+  Store_field (result, 1, Val_int (ret)) ;
+  
+  CAMLreturn (result);
+ 
 }
 
 /*
@@ -391,13 +416,18 @@ value ocaml_libssh2_channel_shell (value ocaml_channel) {
   channel = Channel_val (ocaml_channel) ;
   ret = libssh2_channel_shell (channel) ; 
 
+  if (ret == -37) {
+    CAMLreturn (hash_variant ("Eagain")); 
+  }
+  
   if (ret) {
     printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_shell returned a nonzero code"); 
   }
   
-  CAMLreturn (Val_unit);
-}
+  CAMLreturn (hash_variant ("Ready"));
+}  
+  
 
 /*
  * libssh2_channel_write

@@ -23,10 +23,9 @@ external base64_decode : session -> string -> string = "ocaml_libssh2_base64_dec
 external session_startup : session -> Unix.file_descr -> bool = "ocaml_libssh2_session_startup"
 external session_disconnect : session -> string -> unit = "ocaml_libssh2_session_disconnect" 
 
-type auth_reply = Authenticated | Forbidden | EAGAIN 
-external userauth_password : session -> string -> string -> auth_reply = "ocaml_libssh2_userauth_password"
+external userauth_password : session -> string -> string -> [ `Authenticated | `Forbidden | `Eagain ] = "ocaml_libssh2_userauth_password"
 
-external channel_open_session : session -> channel = "ocaml_libssh2_channel_open_session"
+external channel_open_session : session -> [ `Channel of channel | `Eagain ] = "ocaml_libssh2_channel_open_session"
 external channel_free : channel -> unit = "ocaml_libssh2_channel_free"
 
 external channel_setenv : channel -> string -> string -> unit = "ocaml_libssh2_channel_setenv"
@@ -34,9 +33,9 @@ external channel_request_pty : channel -> unit = "ocaml_libssh2_channel_request_
 
 
 external channel_exec : channel -> string -> unit = "ocaml_libssh2_channel_exec"
-external channel_read : channel -> string -> int -> int = "ocaml_libssh2_channel_read"
+external channel_read : channel -> string -> int -> [ `Eagain | `Read of int ] = "ocaml_libssh2_channel_read"
 
-external channel_shell : channel -> unit = "ocaml_libssh2_channel_shell"
+external channel_shell : channel -> [ `Eagain | `Ready ] = "ocaml_libssh2_channel_shell"
 external channel_write : channel -> string -> int -> unit = "ocaml_libssh2_channel_write"
 
 external channel_send_eof : channel -> unit = "ocaml_libssh2_channel_send_eof"
