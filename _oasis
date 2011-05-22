@@ -10,14 +10,16 @@ Synopsis: Bindings for the libssh2 library
 
 Library ssh2
   Path: lib
-  Modules: SSH2
+  Modules: SSH2, SSH2_lwt
   CCLib: -lssh2
-  CSources: libssh2_stubs.c
+  CSources: libssh2_stubs.c, libssh2_stubs_lwt.c
   CCOpt: -fPIC
-  BuildDepends: Unix
+  BuildDepends: Unix, lwt
 
-Executable test2
+Executable test4
   Path:         test
-  MainIs:       test2.ml
+  MainIs:       test4.ml
   Install:      false
-  BuildDepends: oUnit (>= 1.1.0), ssh2, Unix
+  ByteOpt: -thread
+  NativeOpt: -thread
+  BuildDepends: oUnit (>= 1.1.0), ssh2, lwt, lwt.extra, Unix

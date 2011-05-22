@@ -40,3 +40,9 @@ external channel_write : channel -> string -> int -> unit = "ocaml_libssh2_chann
 
 external channel_send_eof : channel -> unit = "ocaml_libssh2_channel_send_eof"
 external channel_eof : channel -> unit = "ocaml_libssh2_channel_eof"
+external channel_flush : channel -> unit = "ocaml_libssh2_channel_flush"
+
+external set_session_blocking : session -> bool -> unit = "ocaml_libssh2_session_set_blocking" 
+external set_channel_blocking : channel -> bool -> unit = "ocaml_libssh2_channel_set_blocking" 
+
+

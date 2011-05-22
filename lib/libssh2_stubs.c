@@ -254,6 +254,42 @@ value ocaml_libssh2_channel_free (value ocaml_channel) {
 }
 
 /*
+ * libssh2_session_set_blocking 
+ */
+
+value ocaml_libssh2_session_set_blocking (value ocaml_session, value ocaml_blocking) {
+  CAMLparam2 (ocaml_session, ocaml_blocking) ;
+  LIBSSH2_SESSION *session ; 
+  int blocking ; 
+
+  session = Session_val (ocaml_session) ; 
+  blocking = Int_val (ocaml_blocking) ;
+  
+  printf("blocking value is %d\n", blocking); 
+  
+  libssh2_session_set_blocking (session, blocking) ;
+  
+  CAMLreturn (Val_unit) ;
+}
+
+/*
+ * libssh2_channel_set_blocking 
+ */
+
+value ocaml_libssh2_channel_set_blocking (value ocaml_channel, value ocaml_blocking) {
+  CAMLparam2 (ocaml_channel, ocaml_blocking) ;
+  LIBSSH2_CHANNEL *channel ; 
+  int blocking ; 
+
+  channel = Channel_val (ocaml_channel) ; 
+  blocking = Int_val (ocaml_blocking) ;
+
+  libssh2_channel_set_blocking (channel, blocking) ;
+  
+  CAMLreturn (Val_unit) ;
+}
+
+/*
  * libssh2_channel_setenv
  */
 
@@ -409,6 +445,28 @@ value ocaml_libssh2_channel_eof (value ocaml_channel) {
   if (ret) {
     printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_eof returned a nonzero code"); 
+  }
+  
+  CAMLreturn (Val_unit);
+}
+
+
+/*
+ * libssh2_channel_flush
+ */
+
+value ocaml_libssh2_channel_flush (value ocaml_channel) {
+  CAMLparam1 (ocaml_channel) ;
+
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ; 
+
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_flush (channel) ; 
+
+  if (ret) {
+    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
+    caml_failwith ("libssh2_channel_flush returned a nonzero code"); 
   }
   
   CAMLreturn (Val_unit);
