@@ -309,6 +309,7 @@ value ocaml_libssh2_channel_exec (value ocaml_channel, value ocaml_command) {
   ret = libssh2_channel_exec (channel, String_val (ocaml_command)); 
 
   if (ret) {
+    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_exec returned a nonzero code"); 
   }
   
@@ -331,4 +332,84 @@ value ocaml_libssh2_channel_read (value ocaml_channel, value ocaml_buf, value oc
   ret = libssh2_channel_read (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ;
   
   CAMLreturn (Val_int (ret)) ;
+}
+
+/*
+ * libssh2_channel_shell
+ */
+
+value ocaml_libssh2_channel_shell (value ocaml_channel) {
+  CAMLparam1 (ocaml_channel) ;
+
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ; 
+
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_shell (channel) ; 
+
+  if (ret) {
+    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
+    caml_failwith ("libssh2_channel_shell returned a nonzero code"); 
+  }
+  
+  CAMLreturn (Val_unit);
+}
+
+/*
+ * libssh2_channel_write
+ */
+
+value ocaml_libssh2_channel_write (value ocaml_channel, value ocaml_buf, value ocaml_buflen) {
+  CAMLparam3 (ocaml_channel, ocaml_buf, ocaml_buflen) ;
+  
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ; 
+
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_write (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ; 
+  
+  CAMLreturn (Val_int (ret));
+}
+
+/*
+ * libssh2_channel_send_eof 
+ */
+
+value ocaml_libssh2_channel_send_eof (value ocaml_channel) {
+  CAMLparam1 (ocaml_channel) ;
+
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ; 
+
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_send_eof (channel) ; 
+
+  if (ret) {
+    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
+    caml_failwith ("libssh2_channel_send_eof returned a nonzero code"); 
+  }
+  
+  CAMLreturn (Val_unit);
+}
+
+
+/*
+ * libssh2_channel_eof 
+ */
+
+value ocaml_libssh2_channel_eof (value ocaml_channel) {
+  CAMLparam1 (ocaml_channel) ;
+
+  LIBSSH2_CHANNEL *channel ; 
+  int ret ; 
+
+  channel = Channel_val (ocaml_channel) ;
+  ret = libssh2_channel_eof (channel) ; 
+
+  if (ret) {
+    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
+    caml_failwith ("libssh2_channel_eof returned a nonzero code"); 
+  }
+  
+  CAMLreturn (Val_unit);
 }

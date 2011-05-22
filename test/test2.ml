@@ -27,16 +27,26 @@ let _ =
           let channel = SSH2.channel_open_session session in 
           print_endline "channel is here" ; 
           SSH2.channel_exec channel "ls -l" ; 
+
           let buf = String.create 10000 in 
           let buflen = 10000 in 
           let len = SSH2.channel_read channel buf buflen in 
-          Printf.printf "I read %d chars : %s" len (String.sub buf 0 len);  
+          Printf.printf "I read %d chars : %s\n" len (String.sub buf 0 len);
+          let len = SSH2.channel_read channel buf buflen in 
+          Printf.printf "I read %d chars : %s\n" len (String.sub buf 0 len);
+          print_endline "new call"; 
+          SSH2.channel_exec channel "ls -l" ; 
+          let buf = String.create 10000 in 
+          let buflen = 10000 in 
+          let len = SSH2.channel_read channel buf buflen in 
+          Printf.printf "I read %d chars : %s" len (String.sub buf 0 len);
           SSH2.channel_free channel 
-     | false -> print_endline "connection failure (bad credentials)"); 
 
-   SSH2.session_disconnect session "Normal shutdown" ; 
-   SSH2.session_free session ;
-   SSH2.eXit () ;
-   print_endline "everything is ok, .. exiting" 
+      | false -> print_endline "connection failure (bad credentials)"); 
+
+    SSH2.session_disconnect session "Normal shutdown" ; 
+    SSH2.session_free session ;
+    SSH2.eXit () ;
+    print_endline "everything is ok, .. exiting" 
   with e -> Printf.printf "Panic: %s\n" (Printexc.to_string e)
 
