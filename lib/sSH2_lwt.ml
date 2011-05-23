@@ -122,9 +122,9 @@ let channel_read conn channel =
     let sbuflen = 8192 in 
     let sbuf = String.create sbuflen in 
     match SSH2.channel_read channel sbuf sbuflen with 
-      | `Read 0 -> print_endline "OUT" ; return (Buffer.contents gbuf)
-      | `Read i -> print_endline "READ" ; Buffer.add_substring gbuf sbuf 0 sbuflen ; keep_reading conn channel ()
-      | `Eagain -> print_endline "EAGAIN" ; if Buffer.length gbuf > 0 then return (Buffer.contents gbuf) else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
+      | `Read 0 -> return (Buffer.contents gbuf)
+      | `Read i -> Buffer.add_substring gbuf sbuf 0 sbuflen ; keep_reading conn channel ()
+      | `Eagain -> if Buffer.length gbuf > 0 then return (Buffer.contents gbuf) else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
   keep_reading conn channel ()
 
 let check_prompt s = 
@@ -140,8 +140,9 @@ let channel_read_to_prompt conn channel =
   let rec keep_reading conn channel () = 
     let sbuflen = 8192 in 
     let sbuf = String.create sbuflen in 
+    print_endline (Buffer.contents gbuf); 
     match SSH2.channel_read channel sbuf sbuflen with 
-      | `Read 0 -> print_endline "READ0"; return (Buffer.contents gbuf)
+      | `Read 0 -> return (Buffer.contents gbuf)
       | `Read i -> Buffer.add_substring gbuf sbuf 0 i ; keep_reading conn channel ()
       | `Eagain -> let s = Buffer.contents gbuf in if check_prompt s then return s else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
   keep_reading conn channel ()
@@ -149,8 +150,11 @@ let channel_read_to_prompt conn channel =
 let channel_write conn channel buf = 
   print_endline "channel_write" ; 
   let rec keep_writing conn channel buf buflen () = 
-    match SSH2.channel_write channel buf buflen with 
-      | `Wrote 0 -> return () 
-      | `Wrote i -> keep_writing conn channel (String.sub buf i (buflen - i)) (buflen - i) ()
-      | `Eagain -> Lwt_unix.wait_write conn.fd >>= keep_writing conn channel buf buflen in 
+    if buflen = 0 then return () 
+    else 
+      match SSH2.channel_write channel buf buflen with 
+        | `Wrote 0 -> return () 
+        | `Wrote i -> Printf.printf "Wrote %d out of %d\n" i buflen ; keep_writing conn channel (String.sub buf i (buflen - i)) (buflen - i) ()
+        | `Eagain -> Lwt_unix.wait_write conn.fd >>= keep_writing conn channel buf buflen in 
   keep_writing conn channel buf (String.length buf) () 
+    

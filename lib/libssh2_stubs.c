@@ -368,7 +368,7 @@ value ocaml_libssh2_channel_setenv (value ocaml_channel, value ocaml_varname, va
  * libssh2_channel_request_pty 
  */
 
-// Ok here we hide the "vanilla" termcap, as you don't want anything else do you ? :) 
+// Ok here we hide the "ansi" termcap, as you don't want anything else do you ? :)  (using vanilla leads to weird issues)
 
 value ocaml_libssh2_channel_request_pty (value ocaml_channel) {
   CAMLparam1 (ocaml_channel); 
@@ -377,7 +377,7 @@ value ocaml_libssh2_channel_request_pty (value ocaml_channel) {
   int ret ;
  
   channel = Channel_val (ocaml_channel) ;
-  ret = libssh2_channel_request_pty (channel, "vanilla"); 
+  ret = libssh2_channel_request_pty (channel, "ansi"); 
 
   if (ret == -37) {
     CAMLreturn (hash_variant ("Eagain")); 
@@ -425,8 +425,8 @@ value ocaml_libssh2_channel_read (value ocaml_channel, value ocaml_buf, value oc
   value result ;
   
   channel = Channel_val (ocaml_channel) ;
+
   ret = libssh2_channel_read (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ;
-  
   
   if (ret == -37) {
     CAMLreturn (hash_variant ("Eagain")); 
@@ -482,6 +482,8 @@ value ocaml_libssh2_channel_write (value ocaml_channel, value ocaml_buf, value o
   value result ;
 
   channel = Channel_val (ocaml_channel) ;
+  printf (">>> request is %s\n" ,(String_val (ocaml_buf))); 
+
   ret = libssh2_channel_write (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ; 
   
   if (ret == -37) {
