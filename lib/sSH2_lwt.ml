@@ -142,7 +142,7 @@ let channel_read_to_prompt conn channel =
     let sbuf = String.create sbuflen in 
     match SSH2.channel_read channel sbuf sbuflen with 
       | `Read 0 -> print_endline "READ0"; return (Buffer.contents gbuf)
-      | `Read i -> Buffer.add_substring gbuf sbuf 0 sbuflen ; keep_reading conn channel ()
+      | `Read i -> Buffer.add_substring gbuf sbuf 0 i ; keep_reading conn channel ()
       | `Eagain -> let s = Buffer.contents gbuf in if check_prompt s then return s else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
   keep_reading conn channel ()
 
