@@ -18,7 +18,6 @@ external session_startup_free : [ `ssh2_session_startup ] Lwt_unix.job -> unit =
 let session_startup session fd = 
   Lwt_unix.execute_job (session_startup_job session fd) session_startup_result session_startup_free
 
-
 (* Utility function *************************************************************************)
 
 let connect host port = 
@@ -35,6 +34,17 @@ let connect host port =
 *)
 (* Now we want pure non blocking mode with Lwt *)
 
+
+(* We need a wait function that, well, works *)
+
+let wait_read fd = 
+  let t = Lwt_unix.wait_read fd in 
+  let timeout = Lwt_timeout.create 1 (fun _ -> print_endline "> timeout!" ; Lwt.cancel t) in 
+  Lwt_timeout.start timeout ;
+  catch 
+    (fun () -> t)
+    (fun _ -> return ())
+  
 let session_startup session fd = 
   let rec keep_reading fd () =
     match SSH2.session_startup session (Lwt_unix.unix_file_descr fd) with 
@@ -110,7 +120,6 @@ let channel_read conn channel =
       | `Read 0 -> print_endline "OUT" ; return (Buffer.contents gbuf)
       | `Read i -> print_endline "READ" ; Buffer.add_substring gbuf sbuf 0 sbuflen ; keep_reading conn channel ()
       | `Eagain -> print_endline "EAGAIN" ; if Buffer.length gbuf > 0 then return (Buffer.contents gbuf) else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
-  
   keep_reading conn channel ()
 
 let channel_write conn channel buf = 

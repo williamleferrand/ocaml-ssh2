@@ -16,9 +16,9 @@ Library ssh2
   CCOpt: -fPIC
   BuildDepends: Unix, lwt, lwt.unix
 
-Executable test4
+Executable test5
   Path:         test
-  MainIs:       test4.ml
+  MainIs:       test5.ml
   Install:      false
   ByteOpt: -thread
   NativeOpt: -thread
