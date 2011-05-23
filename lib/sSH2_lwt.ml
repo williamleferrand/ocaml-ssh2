@@ -71,6 +71,14 @@ let userauth_password username password conn =
       | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn in 
   Lwt_unix.wait_write conn.fd >>= keep_reading conn  
 
+let userauth_publickey_fromfile username publickey privatekey passphrase conn = 
+  print_endline "userauth" ; 
+  let rec keep_reading conn () = 
+    match SSH2.userauth_publickey_fromfile conn.session username publickey privatekey passphrase with
+      | `Authenticated -> return true
+      | `Forbidden -> return false 
+      | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn in 
+  Lwt_unix.wait_write conn.fd >>= keep_reading conn
 
 let channel_open_session conn = 
   print_endline "open_session" ; 

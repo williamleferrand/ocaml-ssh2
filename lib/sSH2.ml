@@ -24,6 +24,7 @@ external session_startup : session -> Unix.file_descr -> [ `Ok | `Eagain ] = "oc
 external session_disconnect : session -> string -> [ `Ok | `Eagain ] = "ocaml_libssh2_session_disconnect" 
 
 external userauth_password : session -> string -> string -> [ `Authenticated | `Forbidden | `Eagain ] = "ocaml_libssh2_userauth_password"
+external userauth_publickey_fromfile : session -> string -> string -> string -> string -> [ `Authenticated | `Forbidden | `Eagain ] = "ocaml_libssh2_userauth_publickey_fromfile"
 
 external channel_open_session : session -> [ `Channel of channel | `Eagain ] = "ocaml_libssh2_channel_open_session"
 external channel_free : channel -> unit = "ocaml_libssh2_channel_free"

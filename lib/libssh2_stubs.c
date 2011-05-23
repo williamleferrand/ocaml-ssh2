@@ -226,6 +226,37 @@ value ocaml_libssh2_userauth_password (value ocaml_session, value username, valu
     CAMLreturn (hash_variant ("Authenticated"));
 }
 
+
+/*
+ * libssh2_userauth_publickey
+ */
+
+value ocaml_libssh2_userauth_publickey_fromfile (value ocaml_session, value ocaml_username, value ocaml_publickey, value ocaml_privatekey, value ocaml_passphrase) {
+  CAMLparam5 (ocaml_session, ocaml_username, ocaml_publickey, ocaml_privatekey, ocaml_passphrase) ; 
+  
+  LIBSSH2_SESSION *session ; 
+  int ret ; 
+  
+  session = Session_val (ocaml_session) ; 
+
+  ret = libssh2_userauth_publickey_fromfile (session, 
+                                             String_val (ocaml_username), 
+                                             String_val (ocaml_publickey),
+                                             String_val (ocaml_privatekey), 
+                                             String_val (ocaml_passphrase)) ; 
+
+  if (ret == -37) {
+    CAMLreturn (hash_variant ("Eagain")); 
+  }
+
+  if (ret) {
+    CAMLreturn (hash_variant ("Forbidden"));
+  }
+  
+  CAMLreturn (hash_variant ("Authenticated"));
+}
+
+
 /*
  * libssh2_channel_open_session
  */
