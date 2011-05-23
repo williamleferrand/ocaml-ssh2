@@ -15,7 +15,7 @@ let _ =
 
       Lwt.ignore_result (print_forever ()); 
 
-      let host = "75.101.159.130" in
+      let host = "50.16.86.62" in
       SSH2_lwt.connect_nb host 22
       >>= fun conn ->
       print_endline "calling userauth" ;
