@@ -36,10 +36,17 @@ let connect host port =
 let session_startup session fd = 
   let rec keep_reading fd () =
     match SSH2.session_startup session (Lwt_unix.unix_file_descr fd) with 
-        true -> return () 
-      | false -> Lwt_unix.wait_read fd >>= keep_reading fd in 
+        `Ok -> return () 
+      | `Eagain -> Lwt_unix.wait_read fd >>= keep_reading fd in 
   Lwt_unix.wait_write fd >>= keep_reading fd
 
+let session_disconnect conn msg = 
+  let rec keep_reading conn () = 
+    match SSH2.session_disconnect conn.session msg with 
+      | `Ok -> return () 
+      | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn in 
+  Lwt_unix.wait_write conn.fd >>= keep_reading conn
+  
 let connect_nb host port = 
   let fd = Lwt_unix.socket Lwt_unix.PF_INET Lwt_unix.SOCK_STREAM 0 in
   let sockaddr = Lwt_unix.ADDR_INET (Unix.inet_addr_of_string host, port) in 
@@ -98,7 +105,7 @@ let channel_read conn channel =
 
 let channel_write conn channel buf = 
   print_endline "channel_write" ; 
- 
+
   let rec keep_writing conn channel buf buflen () = 
     match SSH2.channel_write channel buf buflen with 
       | `Wrote 0 -> return () 

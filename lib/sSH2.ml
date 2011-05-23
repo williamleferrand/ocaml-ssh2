@@ -20,8 +20,8 @@ external session_free : session -> unit = "ocaml_libssh2_session_free"
 
 external base64_decode : session -> string -> string = "ocaml_libssh2_base64_decode"
 
-external session_startup : session -> Unix.file_descr -> bool = "ocaml_libssh2_session_startup"
-external session_disconnect : session -> string -> unit = "ocaml_libssh2_session_disconnect" 
+external session_startup : session -> Unix.file_descr -> [ `Ok | `Eagain ] = "ocaml_libssh2_session_startup"
+external session_disconnect : session -> string -> [ `Ok | `Eagain ] = "ocaml_libssh2_session_disconnect" 
 
 external userauth_password : session -> string -> string -> [ `Authenticated | `Forbidden | `Eagain ] = "ocaml_libssh2_userauth_password"
 

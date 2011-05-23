@@ -166,14 +166,14 @@ value ocaml_libssh2_session_startup (value ocaml_session, value ocaml_socket) {
   ret = libssh2_session_startup(session, sock) ; 
 
   if (ret == -37) {
-    CAMLreturn (Val_bool (0));
+    CAMLreturn (hash_variant ("Eagain")); 
   }
    
   if (ret) {
     caml_failwith ("ocaml_libssh2_session_startup can't connect to <sock>"); 
   }
 
-  CAMLreturn (Val_bool (1)); 
+  CAMLreturn (hash_variant ("Ok"));
 }
 
 
@@ -190,11 +190,17 @@ value ocaml_libssh2_session_disconnect (value ocaml_session, value ocaml_descrip
 
   ret = libssh2_session_disconnect (session, String_val (ocaml_description)); 
   
+  
+  if (ret == -37) {
+    CAMLreturn (hash_variant ("Eagain")); 
+  }
+  
   if (ret) {
     caml_failwith ("ocaml_libssh2_session_disconnect returned non zero code") ; 
   }
   
-  CAMLreturn (Val_unit) ;  
+    CAMLreturn (hash_variant ("Ok"));
+
 }
 
 

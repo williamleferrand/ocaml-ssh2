@@ -43,7 +43,6 @@ let _ =
           SSH2_lwt.channel_read conn channel  
           >>= fun s -> 
           print_endline s; 
-          
-          return () 
+          SSH2_lwt.session_disconnect conn "normal disconnect"
                     
     )
