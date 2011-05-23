@@ -14,7 +14,7 @@ Library ssh2
   CCLib: -lssh2
   CSources: libssh2_stubs.c #, libssh2_stubs_lwt.c
   CCOpt: -fPIC
-  BuildDepends: Unix, lwt, lwt.unix
+  BuildDepends: Unix, lwt, lwt.unix, str
 
 Executable test5
   Path:         test
@@ -22,4 +22,4 @@ Executable test5
   Install:      false
   ByteOpt: -thread
   NativeOpt: -thread
-  BuildDepends: oUnit (>= 1.1.0), ssh2, lwt, lwt.unix, Unix
+  BuildDepends: oUnit (>= 1.1.0), ssh2, lwt, str, lwt.unix, Unix

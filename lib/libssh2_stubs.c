@@ -379,11 +379,15 @@ value ocaml_libssh2_channel_request_pty (value ocaml_channel) {
   channel = Channel_val (ocaml_channel) ;
   ret = libssh2_channel_request_pty (channel, "vanilla"); 
 
+  if (ret == -37) {
+    CAMLreturn (hash_variant ("Eagain")); 
+  }
+  
   if (ret) {
     caml_failwith ("libssh2_channel_request_pty returned a nonzero code, the changed are probably not applied"); 
   }
   
-  CAMLreturn (Val_unit); 
+  CAMLreturn (hash_variant ("Ok")); 
 }
 
 

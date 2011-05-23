@@ -26,12 +26,16 @@ let _ =
           SSH2_lwt.channel_open_session conn 
           >>= fun channel -> 
           print_endline "we have the channel" ; 
+          
+          SSH2_lwt.channel_request_pty conn channel 
+          >>= fun _ -> print_endline "we have a pty" ;
           SSH2_lwt.channel_shell conn channel
           >>= fun _ ->
           (* print_endline "reading .." ; 
           SSH2_lwt.channel_read conn channel  
           >>= fun s -> 
           print_endline s; *) 
+          
           SSH2_lwt.channel_write conn channel "ls -l\n" 
           >>= fun _ ->
           print_endline "ok"; 
@@ -47,6 +51,8 @@ let _ =
           SSH2_lwt.channel_read conn channel  
           >>= fun s -> 
           print_endline s; 
+          Lwt_unix.sleep 10000.0 
+          >>= fun _ -> 
           SSH2_lwt.session_disconnect conn "normal disconnect"
                     
     )

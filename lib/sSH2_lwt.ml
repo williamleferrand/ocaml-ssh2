@@ -108,6 +108,14 @@ let channel_shell conn channel =
   Lwt_unix.wait_write conn.fd >>= keep_reading conn channel
 
 
+let channel_request_pty conn channel = 
+  print_endline "request_pty" ; 
+  let rec keep_reading conn channel () = 
+    match SSH2.channel_request_pty channel with 
+        `Ok -> return () 
+      | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn channel in
+  Lwt_unix.wait_write conn.fd >>= keep_reading conn channel
+  
 let channel_read conn channel = 
   print_endline "channel_read" ; 
   let gbuf = Buffer.create 100 in 
@@ -115,12 +123,35 @@ let channel_read conn channel =
   let rec keep_reading conn channel () = 
     let sbuflen = 8192 in 
     let sbuf = String.create sbuflen in 
-    print_endline "keep_reading" ;
+    
     match SSH2.channel_read channel sbuf sbuflen with 
       | `Read 0 -> print_endline "OUT" ; return (Buffer.contents gbuf)
       | `Read i -> print_endline "READ" ; Buffer.add_substring gbuf sbuf 0 sbuflen ; keep_reading conn channel ()
       | `Eagain -> print_endline "EAGAIN" ; if Buffer.length gbuf > 0 then return (Buffer.contents gbuf) else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
   keep_reading conn channel ()
+
+
+let check_prompt s = 
+  if String.length s > 2 then 
+    (try 
+       ignore (Str.search_backward (Str.regexp_string "# ") s (String.length s - 2)); true
+     with Not_found -> false)
+  else false
+
+let channel_read_to_prompt conn channel = 
+  print_endline "channel_read_prompt" ; 
+  let gbuf = Buffer.create 100 in 
+  
+  let rec keep_reading conn channel () = 
+    let sbuflen = 8192 in 
+    let sbuf = String.create sbuflen in 
+    
+    match SSH2.channel_read channel sbuf sbuflen with 
+      | `Read 0 -> return (Buffer.contents gbuf)
+      | `Read i -> Buffer.add_substring gbuf sbuf 0 sbuflen ; keep_reading conn channel ()
+      | `Eagain -> let s = Buffer.contents gbuf in if check_prompt s then return s else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
+  keep_reading conn channel ()
+
 
 let channel_write conn channel buf = 
   print_endline "channel_write" ; 

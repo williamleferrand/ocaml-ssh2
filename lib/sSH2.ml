@@ -30,7 +30,7 @@ external channel_open_session : session -> [ `Channel of channel | `Eagain ] = "
 external channel_free : channel -> unit = "ocaml_libssh2_channel_free"
 
 external channel_setenv : channel -> string -> string -> unit = "ocaml_libssh2_channel_setenv"
-external channel_request_pty : channel -> unit = "ocaml_libssh2_channel_request_pty"
+external channel_request_pty : channel -> [ `Ok | `Eagain ] = "ocaml_libssh2_channel_request_pty"
 
 
 external channel_exec : channel -> string -> unit = "ocaml_libssh2_channel_exec"
