@@ -12,7 +12,7 @@ Library ssh2
   Path: lib
   Modules: SSH2, SSH2_lwt
   CCLib: -lssh2
-  CSources: libssh2_stubs.c, libssh2_stubs_lwt.c
+  CSources: libssh2_stubs.c #, libssh2_stubs_lwt.c
   CCOpt: -fPIC
   BuildDepends: Unix, lwt
 

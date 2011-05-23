@@ -10,12 +10,14 @@ type conn = {
 
 (* session_startup **************************************************************************)
 
+(*
 external session_startup_job : SSH2.session -> Unix.file_descr -> [ `ssh2_session_startup ] Lwt_unix.job = "lwt_ssh2_session_startup_job"
 external session_startup_result : [ `ssh2_session_startup ] Lwt_unix.job -> unit = "lwt_ssh2_session_startup_result"
 external session_startup_free : [ `ssh2_session_startup ] Lwt_unix.job -> unit = "lwt_ssh2_session_startup_free"
 
 let session_startup session fd = 
   Lwt_unix.execute_job (session_startup_job session fd) session_startup_result session_startup_free
+
 
 (* Utility function *************************************************************************)
 
@@ -30,7 +32,7 @@ let connect host port =
   session_startup session (Lwt_unix.unix_file_descr fd)
   >>= fun () -> 
   return { session ; fd }
-
+*)
 (* Now we want pure non blocking mode with Lwt *)
 
 let session_startup session fd = 
