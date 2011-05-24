@@ -140,7 +140,6 @@ let channel_read_to_prompt conn channel =
   let rec keep_reading conn channel () = 
     let sbuflen = 8192 in 
     let sbuf = String.create sbuflen in 
-    print_endline (Buffer.contents gbuf); 
     match SSH2.channel_read channel sbuf sbuflen with 
       | `Read 0 -> return (Buffer.contents gbuf)
       | `Read i -> Buffer.add_substring gbuf sbuf 0 i ; keep_reading conn channel ()
