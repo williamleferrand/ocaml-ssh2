@@ -4,7 +4,9 @@ open Lwt
 
 type conn = { 
   session : SSH2.session ; 
-  fd : Lwt_unix.file_descr }
+  fd : Lwt_unix.file_descr ; 
+  mutable prompt : string ; 
+}
 
 (* Ok, this works fine when running in blocking mode *)
 
@@ -64,15 +66,13 @@ let connect_nb host port =
   let sockaddr = Lwt_unix.ADDR_INET (Unix.inet_addr_of_string host, port) in 
   Lwt_unix.connect fd sockaddr 
   >>= fun _ -> 
-  print_endline "calling init"; 
   let session = SSH2.session_init () in
   SSH2.set_session_blocking session false ;
   session_startup session fd
   >>= fun () -> 
-  return { session ; fd }
+  return { session ; fd ; prompt = "$" }
 
 let userauth_password username password conn =
-  print_endline "userauth" ;
   let rec keep_reading conn () =
     match SSH2.userauth_password conn.session username password with 
       | `Authenticated -> return true 
@@ -81,7 +81,6 @@ let userauth_password username password conn =
   Lwt_unix.wait_write conn.fd >>= keep_reading conn  
 
 let userauth_publickey_fromfile username publickey privatekey passphrase conn = 
-  print_endline "userauth" ; 
   let rec keep_reading conn () = 
     match SSH2.userauth_publickey_fromfile conn.session username publickey privatekey passphrase with
       | `Authenticated -> return true
@@ -90,16 +89,13 @@ let userauth_publickey_fromfile username publickey privatekey passphrase conn =
   Lwt_unix.wait_write conn.fd >>= keep_reading conn
 
 let channel_open_session conn = 
-  print_endline "open_session" ; 
   let rec keep_reading conn () = 
-      print_endline "keep reading" ; 
     match SSH2.channel_open_session conn.session with
       | `Channel channel -> return channel 
       | `Eagain -> Lwt_unix.wait_read conn.fd >>= keep_reading conn in
   Lwt_unix.wait_write conn.fd >>= keep_reading conn
 
 let channel_shell conn channel = 
-  print_endline "channel_shell" ; 
   let rec keep_reading conn channel () = 
     match SSH2.channel_shell channel with 
         `Ready -> return () 
@@ -108,7 +104,6 @@ let channel_shell conn channel =
 
 
 let channel_request_pty conn channel = 
-  print_endline "request_pty" ; 
   let rec keep_reading conn channel () = 
     match SSH2.channel_request_pty channel with 
         `Ok -> return () 
@@ -116,7 +111,6 @@ let channel_request_pty conn channel =
   Lwt_unix.wait_write conn.fd >>= keep_reading conn channel
   
 let channel_read conn channel = 
-  print_endline "channel_read" ; 
   let gbuf = Buffer.create 100 in   
   let rec keep_reading conn channel () = 
     let sbuflen = 8192 in 
@@ -127,15 +121,15 @@ let channel_read conn channel =
       | `Eagain -> if Buffer.length gbuf > 0 then return (Buffer.contents gbuf) else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
   keep_reading conn channel ()
 
-let check_prompt s = 
-  if String.length s > 0 then 
+let check_prompt prompt s = 
+  Printf.printf "Checking on string %s\n" s ; 
+  if String.length s >= (String.length prompt) then 
     (try 
-       ignore (Str.search_backward (Str.regexp_string "$") s (String.length s - 1)); true
+       ignore (Str.search_backward (Str.regexp_string prompt) s (String.length s - (String.length prompt))); true
      with Not_found -> false)
   else false
-
+    
 let channel_read_to_prompt conn channel = 
-  print_endline "channel_read_prompt" ; 
   let gbuf = Buffer.create 100 in   
   let rec keep_reading conn channel () = 
     let sbuflen = 8192 in 
@@ -143,17 +137,16 @@ let channel_read_to_prompt conn channel =
     match SSH2.channel_read channel sbuf sbuflen with 
       | `Read 0 -> return (Buffer.contents gbuf)
       | `Read i -> Buffer.add_substring gbuf sbuf 0 i ; keep_reading conn channel ()
-      | `Eagain -> let s = Buffer.contents gbuf in if check_prompt s then return s else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
+      | `Eagain -> let s = Buffer.contents gbuf in if check_prompt conn.prompt s then return s else (Lwt_unix.wait_read conn.fd >>= keep_reading conn channel) in
   keep_reading conn channel ()
 
 let channel_write conn channel buf = 
-  print_endline "channel_write" ; 
   let rec keep_writing conn channel buf buflen () = 
     if buflen = 0 then return () 
     else 
       match SSH2.channel_write channel buf buflen with 
         | `Wrote 0 -> return () 
-        | `Wrote i -> Printf.printf "Wrote %d out of %d\n" i buflen ; keep_writing conn channel (String.sub buf i (buflen - i)) (buflen - i) ()
+        | `Wrote i -> keep_writing conn channel (String.sub buf i (buflen - i)) (buflen - i) ()
         | `Eagain -> Lwt_unix.wait_write conn.fd >>= keep_writing conn channel buf buflen in 
   keep_writing conn channel buf (String.length buf) () 
     

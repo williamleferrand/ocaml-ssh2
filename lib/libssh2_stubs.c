@@ -73,7 +73,6 @@ value ocaml_libssh2_init (value ocaml_flag) {
 
   flag = Int_val (ocaml_flag); 
 
-  printf ("init flag is %d\n", flag) ;
 
   rc = libssh2_init (LIBSSH2_INIT_NO_CRYPTO);
 
@@ -271,11 +270,6 @@ value ocaml_libssh2_channel_open_session (value ocaml_session) {
   session = Session_val (ocaml_session) ; 
   
   channel = libssh2_channel_open_session(session) ;
-
-  // printf ("Channel : %d\n", channel); fflush (stdout) ; 
-
-
-  //  if (!channel) caml_failwith ("ocaml_libssh2_channel_open_session coundn't open session"); 
   
   if (channel == LIBSSH2CHANNEL_EAGAIN || !channel) CAMLreturn (hash_variant ("Eagain")) ;
   
@@ -320,7 +314,7 @@ value ocaml_libssh2_session_set_blocking (value ocaml_session, value ocaml_block
   session = Session_val (ocaml_session) ; 
   blocking = Int_val (ocaml_blocking) ;
   
-  printf("blocking value is %d\n", blocking); 
+  
   
   libssh2_session_set_blocking (session, blocking) ;
   
@@ -404,7 +398,6 @@ value ocaml_libssh2_channel_exec (value ocaml_channel, value ocaml_command) {
   ret = libssh2_channel_exec (channel, String_val (ocaml_command)); 
 
   if (ret) {
-    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_exec returned a nonzero code"); 
   }
   
@@ -462,7 +455,6 @@ value ocaml_libssh2_channel_shell (value ocaml_channel) {
   }
   
   if (ret) {
-    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_shell returned a nonzero code"); 
   }
   
@@ -482,7 +474,6 @@ value ocaml_libssh2_channel_write (value ocaml_channel, value ocaml_buf, value o
   value result ;
 
   channel = Channel_val (ocaml_channel) ;
-  printf (">>> request is %s\n" ,(String_val (ocaml_buf))); 
 
   ret = libssh2_channel_write (channel, String_val (ocaml_buf), Int_val (ocaml_buflen)) ; 
   
@@ -516,7 +507,6 @@ value ocaml_libssh2_channel_send_eof (value ocaml_channel) {
   ret = libssh2_channel_send_eof (channel) ; 
 
   if (ret) {
-    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_send_eof returned a nonzero code"); 
   }
   
@@ -538,7 +528,6 @@ value ocaml_libssh2_channel_eof (value ocaml_channel) {
   ret = libssh2_channel_eof (channel) ; 
 
   if (ret) {
-    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_eof returned a nonzero code"); 
   }
   
@@ -560,7 +549,6 @@ value ocaml_libssh2_channel_flush (value ocaml_channel) {
   ret = libssh2_channel_flush (channel) ; 
 
   if (ret) {
-    printf ("Ret is %d\n", ret) ; fflush (stdout) ;
     caml_failwith ("libssh2_channel_flush returned a nonzero code"); 
   }
   
